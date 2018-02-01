@@ -1,1 +1,1 @@
-# Minería de Datos: Preprocesamiento y Aprendizaje
+# Minería de Datos: Preprocesamiento y Clasificación
