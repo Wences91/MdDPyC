@@ -11,7 +11,7 @@ library(caret)
 ```
 
 
-# Carga de datos
+## Carga de datos
 
 ```{r}
 Train <- read.csv2("my_dataset_train.csv", sep=",", dec=".", stringsAsFactors = FALSE)
