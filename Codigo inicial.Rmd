@@ -21,6 +21,17 @@ summary(Train)
 summary(Test)
 ```
 
+```{r}
+# Variables categóricas
+which(Train$x0=="") #[1] 1200 1497 1500 1625 2039
+which(Train$x14=="") #[1]  711 1830 1979 2199 2229
+which(Train$x17=="") #[1]   78  671 1076 2289
+which(Train$x51=="") #[1]  513 2470
+which(Train$x61=="") #[1]  606 1334 1608
+which(Train$x63=="") #[1]  872 1064 1613 2166 2258
+```
+
+
 # Prueba inicial con todas las variables posibles
 Hay variables con NAs y campos vacios ("") en Test, por lo que para la primera prueba no me complico y selecciono las variables que en Test no tienen ninguno de ellos.
 ```{r}
