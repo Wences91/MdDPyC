@@ -4,8 +4,8 @@ library(ggplot2)
 # se carga el archivo con las funcione de lectura de datos
 source("lecturaDatos.R")
 
-path <- "./data/"
-file <- "datos.csv"
+path <- "../"
+file <- "my_dataset_train.csv"
 
 # lectura de los datos
 datos <- lecturaDatos(path,file)
@@ -16,19 +16,19 @@ datos <- lecturaDatos(path,file)
 # considerados anomalos para las variable de interes. Este
 # metodo solo considera las desviaciones con respecto a los
 # valores de cada variable (no relaciones con otras variables)
-anomalos <- outlier(datos[,1:3])
+anomalos <- outlier(datos[,2:4])
 print(anomalos)
 
-# la media de la variable separation es
-mean(datos[,"separation"])
+# la media de la variable x3 es
+mean(datos[,"x3"], na.rm = TRUE)
 
-# se muestra la distribucion de separation en funcion del valor
+# se muestra la distribucion de x3 en funcion del valor
 # de la variable clase
-ggplot(data = datos, aes(class, separation)) +
+ggplot(data = datos, aes(y, x3)) +
   geom_boxplot()
 
-# se podria hacer igual con la variable propensity
-ggplot(data = datos, aes(class, propensity)) +
+# se podria hacer igual con la variable x2
+ggplot(data = datos, aes(y, x2)) +
   geom_boxplot()
 
  
