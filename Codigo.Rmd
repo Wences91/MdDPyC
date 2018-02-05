@@ -1,0 +1,82 @@
+---
+title: "Competición Minería de datos: preprocesamiento y clasificación"
+author: "Wenceslao Arroyo Machado"
+date: "4/2/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+```
+
+
+## Carga de datos
+
+```{r}
+Train <- read.csv2("my_dataset_train.csv", sep=",", dec=".", stringsAsFactors = FALSE)
+Test <- read.csv2("my_dataset_test.csv", sep=",", dec=".", stringsAsFactors = FALSE)
+
+summary(Train)
+summary(Test)
+```
+
+```{r}
+# Variables categóricas
+which(Train$x0=="") #[1] 1200 1497 1500 1625 2039
+which(Train$x14=="") #[1]  711 1830 1979 2199 2229
+which(Train$x17=="") #[1]   78  671 1076 2289
+which(Train$x51=="") #[1]  513 2470
+which(Train$x61=="") #[1]  606 1334 1608
+which(Train$x63=="") #[1]  872 1064 1613 2166 2258
+```
+
+
+# Prueba inicial con todas las variables posibles
+Hay variables con NAs y campos vacios ("") en Test, por lo que para la primera prueba no me complico y selecciono las variables que en Test no tienen ninguno de ellos.
+```{r}
+# Variables test problemáticas en Test
+variablesNA <- sapply(1:75, function(x) any(is.na(Test[,x]) | Test[,x]==""))
+variablesNA <- which(!variablesNA)
+# Me quedo con las varaibles que no tienen NAs o campos vacios (""), tanto para Train como Test, en base a las de estas últimas
+test <- Test[,variablesNA]
+train <- Train[,variablesNA]
+
+# Selecciono a su vez las instancias sin NAs o campos vacios ("") de Train
+instannciasNA <- sapply(1:dim(train)[1], function(x) any(is.na(train[x,]) | train[x,]==""))
+instannciasNA <- which(!instannciasNA)
+train <- train[instannciasNA,]
+# Me quedo con las clases de esas instancias
+train.class <- Train[instannciasNA,76]
+```
+
+# Modelos
+Hago dos modelos con 1-NN y GLM sin hacer uso de dos variables que son categóricas.
+```{r}
+# 1-NN 
+modelo <- train(train[,-c(7,27)], train.class,
+                method = "knn",
+                preProcess = c("center","scale"),
+                tuneGrid = data.frame(.k=1),
+                tuneLength = 10,
+                trControl = trainControl(method = "cv"))
+modelo.predict <- predict(modelo,test[,-c(7,27)])
+
+# GLM
+modelo <- train(train[,-c(7,27)], train.class,
+                method = "glm",
+                preProcess = c("center","scale"),
+                tuneLength = 10,
+                trControl = trainControl(method = "cv"))
+modelo.predict <- predict(modelo,test[,-c(7,27)])
+
+# En el caso de GLM se hace un redondeo
+predicciones <- round(modelo.predict, 0)
+
+# Construyo la matriz de predicciones
+predicciones <- matrix(c(1:683,predicciones),683,2,byrow = FALSE)
+colnames(predicciones) <- c("Id","Prediction")
+# Guardo
+write.table(predicciones, "sample.csv", col.names = TRUE, row.names = FALSE,
+            quote=FALSE, sep = ",")
+```
