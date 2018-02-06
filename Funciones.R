@@ -23,6 +23,6 @@ valoresPerdidos <- function(y){
               "Maximo variable"=max(variablesPerdidos),
               "Total de perdidos por variable"=variablesPerdidos,
               "Instancias con perdidos"=which(instanciasPerdidos!=0),
-              "Varaibles con perdidos"=which(variablesPerdidos!=0)))
+              "Variables con perdidos"=which(variablesPerdidos!=0)))
 }
 
