@@ -10,8 +10,8 @@ moda <- function(x) {
 valoresPerdidos <- function(y){
   #' Dada una matriz o dataframe se le aplican don sapply, uno por fila y otro por columna
   #' cada uno cuenta los NAs y campos vacios en el caso de caracteres ("")
-  #' Tras ello se devuelve una lista con el máximo para cada uno de ellos y el total de
-  #' valores perdidos por fila y por columna
+  #' Tras ello se devuelve una lista con el máximo para cada uno de ellos, el total de
+  #' valores perdidos por por columna y los índice de filas y columnas con valores perdidos
   
   instanciasPerdidos <- sapply(1:dim(y)[1], function(x) sum(is.na(y[x,]))+sum(y[x,]=="", na.rm = TRUE))
   
