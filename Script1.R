@@ -2,7 +2,7 @@
 # 1. Analisis preliminar (Grafico y Numerico)
 # 2. Construccion del modelo
 # 3. Estimacion de la bondad del modelo construido
-
+getwd()
 # Carga de bibliotecas y datos
 library(ISLR)
 Train <- read.csv2("my_dataset_train.csv", sep=",", dec=".", stringsAsFactors = FALSE)
@@ -53,9 +53,9 @@ resumen_reg_lineal
 # Da igual uno que otro
 predicciones <-predict(reg_lineal, Test)
 predicciones <-predict(reg_lineal, Test[,c("x1","x2","x3","x5","x7","x9","x10","x11",
-                            "x13","x15","x19","x20",
-                              "x21","x23","x27","x32","x33","x34","x35","x36",
-                              "x40","x42","x43","x41")])
+                                           "x13","x15","x19","x20",
+                                           "x21","x23","x27","x32","x33","x34","x35","x36",
+                                           "x40","x42","x43","x41")])
 
 # x46-x47-x48-x52-x53-x54-x59-x60-x62-x64-x65-x66-x67-x70-x71-x72-x74
 
