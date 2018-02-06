@@ -20,6 +20,20 @@ Test <- read.csv2("my_dataset_test.csv", sep=",", dec=".", stringsAsFactors = FA
 summary(Train)
 summary(Test)
 ```
+## Estudio de valores perdidos
+No hay instancias con más de un valor perdido, la variable que más tiene son 8.
+```{r}
+instanciasPerdidos <- sapply(1:dim(Train)[1], function(x) sum(is.na(Train[x,]))+sum(Train[x,]=="", na.rm = TRUE))
+max(instanciasPerdidos) # No hay más de un valor perdido por instancia
+sum(instanciasPerdidos) # Hay 269 instancias con valores perdidos
+variablesPerdidos <- sapply(1:dim(Train)[2], function(x) sum(is.na(Train[,x]))+sum(Train[,x]=="", na.rm = TRUE))
+max(variablesPerdidos) # La variable con más perdidos tiene 8
+names(variablesPerdidos) <- colnames(Train)
+variablesPerdidos
+plot(variablesPerdidos)
+```
+
+## Estudio de variables categóricas
 
 ```{r}
 # Variables categóricas
