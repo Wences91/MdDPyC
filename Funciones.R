@@ -59,6 +59,9 @@ imputacionCaracteres <- function(x, y=1:dim(x)[2]){
   x
 }
 
+imputacionKnnTotal <- function(x){
+  #' Se incluye dentro una primera función imputacionKnn
+
 imputacionKnn <- function(x, y){
   #' Se le pasa una matriz o data.frame x y el índice de una de sus columnas
   #' Busca en la columna las instancias perdidas y para esas las variables que tienen valores perdidos de cara 
@@ -112,10 +115,8 @@ imputacionKnn <- function(x, y){
   }
   
   x
-  
 }
-
-imputacionKnnTotal <- function(x){
+  #' Segunda parte de la función:
   #' Le paso todas las varaibles perdidas a la función anterior
   #' para ello voy pasando el mismo data.frame, con los datos originales en cada iteración
   #' y en cada una de ellas voy sustituyendo en una copia del dataframe los perdidos con
