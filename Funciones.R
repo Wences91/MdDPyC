@@ -72,6 +72,8 @@ imputacionKnn <- function(x, y){
   #' Se construyen train y test y se entrena con K-NN, usando CV y 10 repeticiones, el resultado
   #' es la matriz o data.frame original pero con dicha columna modificada.
   
+  require(caret)
+  
   # Instancia perdida de la columna
   instanciasPerdidas <- which(is.na(x[,y])|x[,y]=="")
   # Otras variables con datos perdidos en dichas instancias
@@ -102,7 +104,7 @@ imputacionKnn <- function(x, y){
   # Elimino la clase en caso de que esté entre ellas
   variablesNumericas <- variablesNumericas[!variablesNumericas==y]
   
-  modelo <- train(train[,variablesNumericas], train.class,
+  modelo <- caret::train(train[,variablesNumericas], train.class,
                   method = "knn",
                   tuneLength = 10,
                   trControl = trainControl(method = "cv"))
@@ -131,3 +133,5 @@ imputacionKnn <- function(x, y){
   }
   y
 }
+
+
