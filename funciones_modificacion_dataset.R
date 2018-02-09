@@ -28,15 +28,13 @@ imputacionValoresPerdidos <- function(dataset, columnas=c(),
     fila <- datasetInterno[,columna]
     if(is.numeric(fila)){
       valorNuevo <- do.call(modelo, list(x = fila,na.rm = TRUE))
-      print(valorNuevo)
       fila[is.na(fila)] <- valorNuevo 
       fila
     }
     else{
-      fila
+      t <- sort(table(fila),decreasing = TRUE)
+      fila[is.na(fila) | fila == ""] <- names(t)[1]
     }
   })
   return (datasetInterno)
 }
-
-

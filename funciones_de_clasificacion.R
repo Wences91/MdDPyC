@@ -25,16 +25,20 @@ ejecutarRipper <- function(train, test, excludeAttr=c()){
   }else{
     #caso que sean números suponemos que son índices
     if(is.numeric(excludeAttr)){
+      #no quitamos el último elemenot que es la clase
       trainOwn <- train[, -excludeAttr]
       testOwn <- test[, -excludeAttr]
     }
     else{#caso de que los atributos sean nombres
+      #no quitamos el último elemenot que es la clase
       trainOwn <- train[, !(names(train) %in% excludeAttr)]
       testOwn <- test[, !(names(test) %in% excludeAttr)]
     }
+    
   }
   
   model.Ripper = JRip(formulaRip, trainOwn)
   model.Ripper.pred = predict(model.Ripper, newdata = testOwn)
   return (list("modelo"=model.Ripper,"prediccion"=model.Ripper.pred))
 }
+
