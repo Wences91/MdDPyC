@@ -6,6 +6,18 @@
 #para ser usadas estas en nuestros experimentos
 
 
+#Librerias
+
+library(Hmisc)
+library(corrplot)
+library(NoiseFiltersR)
+library(rpart)
+library(caret)
+library(mice)
+library(DMwR)
+library(dummies)
+library(unbalanced)
+
 # Leemos los datos
 
 TrainNormal <- read.csv2("data/my_dataset_train.csv", sep=",", dec=".", stringsAsFactors = FALSE)
@@ -97,18 +109,49 @@ TestSinNumericas$x63 <- as.integer(TestSinNumericas$x63)
 
 # Escribimos los datos
 
-write.csv(TrainSinNumericas, "data/trainSinNumericos.csv")
-write.csv(TestSinNumericas, "data/testSinNumericos.csv")
+write.csv2(TrainSinNumericas, "data/trainSinNumericos.csv", row.names = FALSE)
+write.csv2(TestSinNumericas, "data/testSinNumericos.csv", row.names = FALSE)
 
 
-# TIPO 2: IMPUTACIÓN POR KNN
+# TIPO 2: IMPUTACIÓN POR NORM
 
 # Copiamos los datos
 
+TrainSinNumericasMVNorm <- TrainSinNumericas
+TestSinNumericasMVNorm <- TestSinNumericas
+
+# Imputamos por norm
+
+mice_mod <- mice(TrainSinNumericasMVNorm[,colnames(TrainSinNumericasMVNorm)], method='norm')
+TrainSinNumericasMVNorm <- complete(mice_mod)
+mice_mod <- mice(TestSinNumericasMVNorm[,colnames(TestSinNumericasMVNorm)], method='norm')
+TestSinNumericasMVNorm <- complete(mice_mod)
+
+TrainSinNumericasMVNorm <- TrainSinNumericasMVNorm[,-42]
+TestSinNumericasMVNorm  <- TestSinNumericasMVNorm[,-42]
+
+write.csv2(TrainSinNumericasMVNorm, "data/trainSinNumericosMVNorm.csv", row.names = FALSE)
+write.csv2(TestSinNumericasMVNorm, "data/testSinNumericosMVNorm.csv",row.names = FALSE)
 
 
-mice_mod <- mice(Train[,colnames(Train)], method='cart')
-TrainComplete <- complete(mice_mod)
-summary(TrainComplete)
+
+# TIPO 3: IMPUTACIÓN POR MEDIA
+
+TrainSinNumericasMVQuadratic <- TrainSinNumericas
+TestSinNumericasMVQuadratic <- TestSinNumericas
+
+# Imputamos por norm
+
+mice_mod <- mice(TrainSinNumericasMVQuadratic[,colnames(TrainSinNumericasMVQuadratic)], method='quadratic')
+TrainSinNumericasMVQuadratic <- complete(mice_mod)
+mice_mod <- mice(TestSinNumericasMVQuadratic[,colnames(TestSinNumericasMVQuadratic)], method='quadratic')
+TestSinNumericasMVQuadratic <- complete(mice_mod)
+
+
+TrainSinNumericasMVQuadratic <- TrainSinNumericasMVQuadratic[,-42]
+TestSinNumericasMVQuadratic  <- TestSinNumericasMVQuadratic[,-42]
+
+write.csv2(TrainSinNumericasMVQuadratic, "data/trainSinNumericosMVQuadratic.csv", row.names = FALSE)
+write.csv2(TestSinNumericasMVQuadratic, "data/testSinNumericosMVQuadratic.csv", row.names = FALSE)
 
 
