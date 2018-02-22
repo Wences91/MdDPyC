@@ -155,3 +155,5 @@ write.csv2(TrainSinNumericasMVQuadratic, "data/trainSinNumericosMVQuadratic.csv"
 write.csv2(TestSinNumericasMVQuadratic, "data/testSinNumericosMVQuadratic.csv", row.names = FALSE)
 
 
+
+
