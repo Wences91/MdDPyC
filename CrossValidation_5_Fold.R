@@ -27,7 +27,7 @@ crossvalidation5 <- function(train){
     test <- datos[indices, ]
     train <-datos[-indices, ]
     
-    
+    # A partir de aqui es especifico de mi modelo
     train.class <- train[,dim(train)[2]]
     train.class0 <- as.integer(I(train.class==0))
     train.class1 <- as.integer(I(train.class==1))
