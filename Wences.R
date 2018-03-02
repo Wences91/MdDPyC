@@ -311,9 +311,9 @@ crossvalidation5 <- function(train){
   return(precision)
 }
 
-###
-# 
-##
+################
+# Predicciones #
+################
 
 prediccionTest <- function(train, test){
   # Se le pasa un train y test, entrena con el primero y predice sobre el segundo
@@ -367,6 +367,9 @@ prediccionTest <- function(train, test){
 ###########
 # Modelos #
 ###########
+
+#train <- read.csv2("data/Numericos_ImpKNN_SinCorr-TRAIN.csv", stringsAsFactors = FALSE)
+#test <- read.csv2("data/Numericos_ImpKNN_SinCorr-TEST.csv", stringsAsFactors = FALSE)
 
 ###########
 # 1. Base #
