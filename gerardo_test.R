@@ -249,13 +249,62 @@ imputacionKnnTotal <- function(x){
 }
 
 # Aplico la función, que tiene en cuenta tanto numeros como caracteres
-train <- imputacionKnnTotal(train)
-test <- imputacionKnnTotal(test)
+#train <- imputacionKnnTotal(train)
+#test <- imputacionKnnTotal(test)
+train <- read.csv2("data/Numericos_ImpKNN_SinCorr-TRAIN.csv",
+                    stringsAsFactors = FALSE);
+test <- read.csv2("data/Numericos_ImpKNN_SinCorr-TEST.csv",
+                   stringsAsFactors = FALSE);
 
 
 ##############
 # CV 5-Folds #
 ##############
+#' función que calcula ripper sobre un conjunt de train/tes
+#'  devuelve una medida de acuracy. Se supone que el
+#'  último atributod del dataset es la variable de clasificación.
+#'  En este caso si hay string values da fallo
+#' @param train conjunto de entrenamiento
+#' @param test conjunto de entrenamiento
+#' @param id de comlumnas o nombre de atributos a excluir
+
+ejecutarRipper <- function(train, test, excludeAttr=c()){
+  library(caret)
+  library(RWeka)
+  
+  #entendemos que en la última columa está la clase discriminatoria
+  class <- colnames(train)[ncol(train)]
+  
+  if(!is.factor(train[,ncol(train)])){
+    train[,length(train)] <- as.factor(train[,ncol(train)])
+  }
+  
+  formulaRip <- as.formula(paste(class,"~."))
+  #si no tenemos atributos que excluir
+  if(length(excludeAttr) == 0){
+    trainOwn <- train
+    testOwn <- test
+  }else{
+    #caso que sean números suponemos que son índices
+    if(is.numeric(excludeAttr)){
+      #no quitamos el último elemenot que es la clase
+      trainOwn <- train[, -excludeAttr]
+      testOwn <- test[, -excludeAttr]
+    }
+    else{#caso de que los atributos sean nombres
+      #no quitamos el último elemenot que es la clase
+      trainOwn <- train[, !(names(train) %in% excludeAttr)]
+      testOwn <- test[, !(names(test) %in% excludeAttr)]
+    }
+    
+  }
+  
+  model.Ripper = JRip(formulaRip, trainOwn)
+  model.Ripper.pred = predict(model.Ripper, newdata = testOwn)
+  print("Terminando Ripper")
+  return (list("modelo"=model.Ripper,"prediccion"=model.Ripper.pred))
+}
+
 
 # Función de validación cruzada con 5-folds
 crossvalidation5 <- function(train){
@@ -277,39 +326,12 @@ crossvalidation5 <- function(train){
     indices <- which(folds==x,arr.ind=TRUE)
     test <- datos[indices, ]
     train <-datos[-indices, ]
+    print (paste("Ejecutando el fold ",x))
     
+    resultado <- ejecutarRipper(train, test)
+    print (paste("resultado parcial", sum(resultado$prediccion==test[,dim(test)[2]])))
     
-    train.class <- train[,dim(train)[2]]
-    train.class0 <- as.integer(I(train.class==0))
-    train.class1 <- as.integer(I(train.class==1))
-    train.class2 <- as.integer(I(train.class==2))
-    train.class3 <- as.integer(I(train.class==3))
-    
-    # Quito a train la clase
-    train <- train[,-dim(train)[2]]
-    
-    # Dataframes
-    training0 <- cbind(train, y=train.class0)
-    training1 <- cbind(train, y=train.class1)
-    training2 <- cbind(train, y=train.class2)
-    training3 <- cbind(train, y=train.class3)
-    
-    
-    # Modelos y predicciones
-    modelo0 <- glm(y~., data=training0, family = "binomial", maxit=500)
-    modelo.predict0 <- predict(modelo0,newdata=test ,type="response")
-    modelo1 <- glm(y~., data=training1, family = "binomial", maxit=500)
-    modelo.predict1 <- predict(modelo1,newdata=test ,type="response")
-    modelo2 <- glm(y~., data=training2, family = "binomial", maxit=500)
-    modelo.predict2 <- predict(modelo2,newdata=test ,type="response")
-    modelo3 <- glm(y~., data=training3, family = "binomial", maxit=500)
-    modelo.predict3 <- predict(modelo3,newdata=test ,type="response")
-    
-    predicciones <- ifelse(modelo.predict0>modelo.predict1 & modelo.predict0>modelo.predict2 & modelo.predict0>modelo.predict3, 0,
-                           ifelse(modelo.predict1>modelo.predict2 & modelo.predict1>modelo.predict3, 1,
-                                  ifelse(modelo.predict2>modelo.predict3, 2, 3) ))
-    
-    return(mean(predicciones==test[,dim(test)[2]]))
+    return(mean(resultado$prediccion==test[,dim(test)[2]]))
     
   }))
   
@@ -321,42 +343,16 @@ crossvalidation5 <- function(train){
 ##
 
 prediccionTest <- function(train, test){
-  # Se le pasa un train y test, entrena con el primero y predice sobre el segundo
+  # Se le pasa un train y test, entrena con el primero y 
+  #predice sobre el segundo
   
   set.seed(2)
   
-  train.class <- train[,dim(train)[2]]
-  train.class0 <- as.integer(I(train.class==0))
-  train.class1 <- as.integer(I(train.class==1))
-  train.class2 <- as.integer(I(train.class==2))
-  train.class3 <- as.integer(I(train.class==3))
+  resultado <- ejecutarRipper(train, test)
   
-  # Quito a train la clase
-  train <- train[,-dim(train)[2]]
-  
-  # Dataframes
-  training0 <- cbind(train, y=train.class0)
-  training1 <- cbind(train, y=train.class1)
-  training2 <- cbind(train, y=train.class2)
-  training3 <- cbind(train, y=train.class3)
-  
-  
-  # Modelos y predicciones
-  modelo0 <- glm(y~., data=training0, family = "binomial", maxit=500)
-  modelo.predict0 <- predict(modelo0,newdata=test ,type="response")
-  modelo1 <- glm(y~., data=training1, family = "binomial", maxit=500)
-  modelo.predict1 <- predict(modelo1,newdata=test ,type="response")
-  modelo2 <- glm(y~., data=training2, family = "binomial", maxit=500)
-  modelo.predict2 <- predict(modelo2,newdata=test ,type="response")
-  modelo3 <- glm(y~., data=training3, family = "binomial", maxit=500)
-  modelo.predict3 <- predict(modelo3,newdata=test ,type="response")
-  
-  predicciones <- ifelse(modelo.predict0>modelo.predict1 & modelo.predict0>modelo.predict2 & modelo.predict0>modelo.predict3, 0,
-                         ifelse(modelo.predict1>modelo.predict2 & modelo.predict1>modelo.predict3, 1,
-                                ifelse(modelo.predict2>modelo.predict3, 2, 3) ))
   
   # Guardo aparte las predicciones para devolverlas al final
-  resultados <- predicciones
+  predicciones <- resultado$prediccion
   
   # Creo un tabla de predicciones para subirlo a Kaggle
   predicciones <- matrix(c(1:length(predicciones),predicciones), length(predicciones), 2,byrow = FALSE)
@@ -366,7 +362,7 @@ prediccionTest <- function(train, test){
   write.table(predicciones, "sample.csv", col.names = TRUE, row.names = FALSE,
               quote=FALSE, sep = ",")
   
-  return(resultados)
+  return(resultado$prediccion)
 }
 
 ###########
@@ -400,6 +396,10 @@ prediccionTest <- function(train, test){
   #return (datasetInterno)
   #}
 #train1_base <- imputacionValoresPerdidos(train_base)
+#y <- train1_base$y
+#train1_base$y<-NULL
+#train1_base <- cbind(y, train1_base)
+
 #test1_base <- imputacionValoresPerdidos(test_base)
 
 #write.csv2(train1_base, "data/Numericos_SinCorr_Media-TRAIN.csv", row.names = FALSE)
@@ -407,7 +407,8 @@ prediccionTest <- function(train, test){
 
 train_media <- read.csv2("data/Numericos_SinCorr_Media-TRAIN.csv");
 test_media <- read.csv2("data/Numericos_SinCorr_Media-TEST.csv");
-crossvalidation5(train_media) # 0.6523741
+
+crossvalidation5(train_media) # 0.5359196
 prediccionTest(train_media, test_media)
 
 ###########
@@ -418,13 +419,15 @@ prediccionTest(train_media, test_media)
 #colnames(test_base)
 #x71 no tiene na
 #test2_base <- rfImpute( x71 ~ . , test_base)
-
+#y <-test2_base$y
+#test2_base$y<-NULL
+#test2_base <- cbind(test2_base,y)
 #write.csv2(train2_base, "data/Numericos_ImpRA_SinCorr-TRAIN.csv", row.names = FALSE)
 #write.csv2(test2_base, "data/Numericos_ImpRA_SinCorr-TEST.csv", row.names = FALSE)
 
 train_ra <- read.csv2("data/Numericos_ImpRA_SinCorr-TRAIN.csv");
 test_ra <- read.csv2("data/Numericos_ImpRA_SinCorr-TEST.csv");
-crossvalidation5(train_ra) # 0.6523741
+crossvalidation5(train_ra) #0.546549
 prediccionTest(train_ra, test)
 
 
@@ -456,7 +459,7 @@ rm <-randomForest::randomForest(train[,-75], as.factor(train[,75]))
 importance <- caret::varImp(rm, scale=FALSE)
 var <- order(importance[[1]])
 
-crossvalidation5(train[,-var[1:25]]) # 0.6506509
+crossvalidation5(train[,-var[1:25]]) # 0.5403119
 prediccionTest(train[,-var[1:25]], test)
 
 ##########
@@ -479,7 +482,7 @@ prediccionTest(train[,-var[1:25]], test)
 
 train_bo <- read.csv2("data/Numericos_ImpKNN_SinCorr-Boruta-TRAIN.csv");
 test_bo <- read.csv2("data/Numericos_ImpKNN_SinCorr-Boruta-TEST.csv");
-crossvalidation5(train_bo) # 0.6523741
+crossvalidation5(train_bo) # 0.5538811
 prediccionTest(test_bo, test_bo)
 
 
@@ -490,7 +493,7 @@ train_bo$y <- as.factor(train_bo$y)
 train_bo_ipf <- NoiseFiltersR::IPF(train_bo, s=3)
 train_bo_ipf <- train_bo_ipf$cleanData
 
-crossvalidation5(train_bo_ipf) # 0.6523741
+crossvalidation5(train_bo_ipf) # 0.7717314
 prediccionTest(test_bo, test_bo)
 
 
@@ -510,7 +513,7 @@ trainIPF <- IPF(y ~., trainIPF, consensus = TRUE, s=2)
 # Me quedo unicamente con el data.frame limpio
 trainIPF <- trainIPF$cleanData
 
-crossvalidation5(trainIPF[,-var[1:25]]) # 0.6881916
+crossvalidation5(trainIPF[,-var[1:25]]) #0.5992802 
 prediccionTest(trainIPF[,-var[1:25]], test)
 
 ############
@@ -533,7 +536,7 @@ names(instanciasSmote)[75] <- "y"
 # Añado los SMOTE a train
 trainSMOTE <- rbind(trainSMOTE, instanciasSmote)
 
-crossvalidation5(trainSMOTE[,-var[1:25]]) # 0.6523741
+crossvalidation5(trainSMOTE[,-var[1:25]]) # 
 prediccionTest(trainSMOTE[,-var[1:25]], test)
 
 ##################
@@ -563,7 +566,7 @@ names(instanciasSmote)[75] <- "y"
 # Añado los SMOTE a train
 trainIPF_SMOTE <- rbind(trainIPF_SMOTE, instanciasSmote)
 
-crossvalidation5(trainIPF_SMOTE[,-var[1:25]]) # 0.7006897
+crossvalidation5(trainIPF_SMOTE[,-var[1:25]]) # 0.6094697
 prediccionTest(trainIPF_SMOTE[,-var[1:25]], test)
 
 ##################
@@ -593,7 +596,7 @@ trainSMOTE_IPF <- IPF(y ~., trainSMOTE_IPF, consensus = TRUE, s=2)
 # Me quedo unicamente con el data.frame limpio
 trainSMOTE_IPF <- trainSMOTE_IPF$cleanData
 
-crossvalidation5(trainSMOTE_IPF[,-var[1:25]]) # 0.6690093
+crossvalidation5(trainSMOTE_IPF[,-var[1:25]]) #0.6008772
 prediccionTest(trainSMOTE_IPF[,-var[1:25]], test)
 
 ##################
@@ -607,7 +610,7 @@ instanciasTL<- unbalanced::ubTomek(trainTL[,-75], (trainTL[,75]==0))
 # Elimino esas instancias de train
 trainTL <- trainTL[-instanciasTL$id.rm,]
 
-crossvalidation5(trainTL[,-var[1:25]]) # 0.64294
+crossvalidation5(trainTL[,-var[1:25]]) # 0.5485493
 prediccionTest(trainTL[,-var[1:25]], test)
 
 ##########################
@@ -634,7 +637,7 @@ names(instanciasSmote)[75] <- "y"
 # Añado los SMOTE a train
 trainTL_SMOTE <- rbind(trainTL_SMOTE, instanciasSmote)
 
-crossvalidation5(trainTL_SMOTE[,-var[1:25]]) # 0.6566631
+crossvalidation5(trainTL_SMOTE[,-var[1:25]]) # 0.6095479
 prediccionTest(trainTL_SMOTE[,-var[1:25]], test)
 
 ##########################
@@ -661,7 +664,7 @@ instanciasTL<- unbalanced::ubTomek(trainSMOTE_TL[,-75], (trainSMOTE_TL[,75]==0))
 # Elimino esas instancias de train
 trainSMOTE_TL <- trainSMOTE_TL[-instanciasTL$id.rm,]
 
-crossvalidation5(trainSMOTE_TL[,-var[1:25]]) # 0.6534006
+crossvalidation5(trainSMOTE_TL[,-var[1:25]]) # 0.5938863
 prediccionTest(trainSMOTE_TL[,-var[1:25]], test)
 
 ###########
@@ -679,7 +682,7 @@ instanciasROS <- ROSE::ovun.sample(y ~., trainROS, method = "over")
 # Añado a train las instancias ROS de la clase 0
 trainROS <- rbind(train, instanciasROS$data[which(instanciasROS$data[,75]==0),])
 
-crossvalidation5(trainROS[,-var[1:25]]) # 0.7229307
+crossvalidation5(trainROS[,-var[1:25]]) # 0.7704359
 prediccionTest(trainROS[,-var[1:25]], test)
 
 
@@ -705,7 +708,7 @@ trainROS_IPF <- IPF(y ~., trainROS_IPF, consensus = TRUE, s=2)
 # Me quedo unicamente con el data.frame limpio
 trainROS_IPF <- trainROS_IPF$cleanData
 
-crossvalidation5(trainROS_IPF[,-var[1:25]]) # 0.7340467
+crossvalidation5(trainROS_IPF[,-var[1:25]]) # 0.7798058
 prediccionTest(trainROS_IPF[,-var[1:25]], test)
 
 #############
@@ -733,7 +736,7 @@ levels(train_ROS2_3) <- c(0,3)
 
 train_ROS2 <- rbind(train, train_ROS2_1, train_ROS2_2, train_ROS2_3)
 
-crossvalidation5(train_ROS2[,-var[1:25]]) # 0.6478257
+crossvalidation5(train_ROS2[,-var[1:25]]) # 0.8389088
 prediccionTest(train_ROS2[,-var[1:25]], test)
 
 ###################
@@ -769,7 +772,7 @@ train_ROS2_IPF <- IPF(y ~., train_ROS2_IPF, consensus = TRUE, s=2)
 # Me quedo unicamente con el data.frame limpio
 train_ROS2_IPF <- train_ROS2_IPF$cleanData
 
-crossvalidation5(train_ROS2_IPF[,-var[1:25]]) # 0.6639876
+crossvalidation5(train_ROS2_IPF[,-var[1:25]]) # 
 prediccionTest(train_ROS2_IPF[,-var[1:25]], test)
 
 ###########
@@ -781,7 +784,7 @@ trainENN <- train
 instanciasENN <- unbalanced::ubENN(trainENN[,-75], (trainENN[,75]==0))
 trainENN <- trainENN[-instanciasENN$id.rm,]
 
-crossvalidation5(trainENN[,-var[1:25]]) # 0.7550752
+crossvalidation5(trainENN[,-var[1:25]]) # 0.8723058
 prediccionTest(trainENN[,-var[1:25]], test)
 
 ##################
@@ -792,7 +795,7 @@ trainROS_Propio <- train
 
 trainROS_Propio <- rbind(trainROS_Propio, train[which(trainROS_Propio[,75]==0),])
 
-crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.643618
+crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.5619751
 prediccionTest(trainROS_Propio[,-var[1:25]], test)
 
 #############################
@@ -804,7 +807,7 @@ trainROS_Propio <- train
 trainROS_Propio <- rbind(trainROS_Propio, train[which(trainROS_Propio[,75]==0),])
 trainROS_Propio <- rbind(trainROS_Propio, train[sample(which(trainROS_Propio[,75]==1), length(which(trainROS_Propio[,75]==1))/2.5),]) 
 
-crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.6458915
+crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.5990698
 prediccionTest(trainROS_Propio[,-var[1:25]], test)
 
 # Gráfico para ver el acierto sobre train (Mejora el acierto de la clase 0 pero se reducen en la dos)
