@@ -24,7 +24,6 @@ test <- Test
 # Selección de variables más relevantes
 #**********************************************
 
-## Not run: 
 set.seed(1)
 
 ctrl <- gafsControl(functions = rfGA,
