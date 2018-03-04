@@ -368,12 +368,33 @@ prediccionTest <- function(train, test){
 # Modelos #
 ###########
 
+
+#################
+# 1. Base Media #
+#################
+
+#train <- read.csv2("data/Numericos_SinCorr_Media-TRAIN.csv", stringsAsFactors = FALSE)
+#test <- read.csv2("data/Numericos_SinCorr_Media-TEST.csv", stringsAsFactors = FALSE)
+
+crossvalidation5(train) # 0.6407568
+prediccionTest(train, test)
+
+#################
+# 1. Base AR    #
+#################
+
+#train <- read.csv2("data/Numericos_ImpRA_SinCorr-TRAIN.csv", stringsAsFactors = FALSE)
+#test <- read.csv2("data/Numericos_ImpRA_SinCorr-TEST.csv", stringsAsFactors = FALSE)
+
+crossvalidation5(train) # 0.6411204
+prediccionTest(train, test)
+
+###############
+# 1. Base KNN #
+###############
+
 #train <- read.csv2("data/Numericos_ImpKNN_SinCorr-TRAIN.csv", stringsAsFactors = FALSE)
 #test <- read.csv2("data/Numericos_ImpKNN_SinCorr-TEST.csv", stringsAsFactors = FALSE)
-
-###########
-# 1. Base #
-###########
 
 crossvalidation5(train) # 0.6400181
 prediccionTest(train, test)
@@ -400,6 +421,32 @@ var <- order(importance[[1]])
 
 crossvalidation5(train[,-var[1:25]]) # 0.6506509
 prediccionTest(train[,-var[1:25]], test)
+
+###################################
+# 2. Selección variables (Boruta) #
+###################################
+
+library(Boruta)
+
+var2 <- Boruta(train[,-ncol(train)], train$y)
+train3_base <- train[,!(names(train) %in%names(var2$finalDecision)[var2$finalDecision=="Rejected"])]
+test3_base <- test[,!(names(test) %in%names(var2$finalDecision)[var2$finalDecision=="Rejected"])]
+
+crossvalidation5(train3_base) # 0.6462533
+prediccionTest(train3_base, test3_base)
+
+
+#########################################
+# 2. Selección variables (Boruta) + IPF #
+#########################################
+train_bo <- train3_base
+
+train_bo$y <- as.factor(train_bo$y)
+train_bo_ipf <- NoiseFiltersR::IPF(train_bo, s=3)
+train_bo_ipf <- train_bo_ipf$cleanData
+
+crossvalidation5(train_bo_ipf) # 0.7717314
+prediccionTest(train_bo_ipf, test3_base)
 
 ##########
 # 3. IPF #
@@ -748,3 +795,4 @@ descartada <- rbind(trainDescartada, retro)
 
 crossvalidation5(descartada[,-var[1:25]]) # 0.6606727
 prediccionTest(descartada[,-var[1:25]], test)
+
