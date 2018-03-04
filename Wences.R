@@ -311,9 +311,9 @@ crossvalidation5 <- function(train){
   return(precision)
 }
 
-###
-# 
-##
+################
+# Predicciones #
+################
 
 prediccionTest <- function(train, test){
   # Se le pasa un train y test, entrena con el primero y predice sobre el segundo
@@ -367,6 +367,9 @@ prediccionTest <- function(train, test){
 ###########
 # Modelos #
 ###########
+
+#train <- read.csv2("data/Numericos_ImpKNN_SinCorr-TRAIN.csv", stringsAsFactors = FALSE)
+#test <- read.csv2("data/Numericos_ImpKNN_SinCorr-TEST.csv", stringsAsFactors = FALSE)
 
 ###########
 # 1. Base #
@@ -719,3 +722,29 @@ ggplot2::ggplot()+
   scale_fill_discrete("Datos") +
   labs(x = "Clase", y = "Valores")
 
+##############
+# Descartada #
+##############
+
+trainDescartada <- train
+
+trainDescartada <- rbind(trainDescartada, train[which(trainDescartada[,75]==0),])
+trainDescartada <- rbind(trainDescartada, train[sample(which(trainDescartada[,75]==1), length(which(trainDescartada[,75]==1))/2.5),]) 
+
+# Predigo sobre test y asigno las predicciones de la clase obtenidas a test
+retro <- prediccionTest(trainDescartada[,-var[1:25]], test)
+retro <- cbind(test, y=retro)
+
+# Factorizo la clase para aplicarle IPF
+retro[,75] <- factor(retro[,75])
+# Le quito las instancias con ruido
+# indico que pare a la segunda que no encuentre y que lo haga mediante consenso
+retro <- IPF(y ~., retro, s=2, nfolds=5, consensus=TRUE, p=0.01)
+# Me quedo unicamente con el data.frame limpio
+retro <- retro$cleanData
+
+# Uno train y test
+descartada <- rbind(trainDescartada, retro)
+
+crossvalidation5(descartada[,-var[1:25]]) # 0.6606727
+prediccionTest(descartada[,-var[1:25]], test)
