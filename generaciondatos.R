@@ -134,7 +134,6 @@ write.csv2(TrainSinNumericasMVNorm, "data/trainSinNumericosMVNorm.csv", row.name
 write.csv2(TestSinNumericasMVNorm, "data/testSinNumericosMVNorm.csv",row.names = FALSE)
 
 
-
 # TIPO 3: IMPUTACIÓN POR MEDIA
 
 TrainSinNumericasMVQuadratic <- TrainSinNumericas
@@ -153,7 +152,4 @@ TestSinNumericasMVQuadratic  <- TestSinNumericasMVQuadratic[,-42]
 
 write.csv2(TrainSinNumericasMVQuadratic, "data/trainSinNumericosMVQuadratic.csv", row.names = FALSE)
 write.csv2(TestSinNumericasMVQuadratic, "data/testSinNumericosMVQuadratic.csv", row.names = FALSE)
-
-
-
 
