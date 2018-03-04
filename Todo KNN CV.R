@@ -1,3 +1,4 @@
+# Los conjuntos de datos utilizados se encuentran en la carpeta data de github
 #############
 # Funciones #
 #############
@@ -116,10 +117,10 @@ crossvalidation5(train) # 0.6400181
 prediccionTest(train, test)
 
 ##########################
-# 2. Selección variables #
+# 2. SelecciÃ³n variables #
 ##########################
-# A través de Random Forest obtengo un vecto ordenado en función de la importancia
-# de las variables que intervienen en él
+# A travÃ©s de Random Forest obtengo un vecto ordenado en funciÃ³n de la importancia
+# de las variables que intervienen en Ã©l
 
 library(randomForest)
 rm <-randomForest::randomForest(train[,-75], as.factor(train[,75]))
@@ -183,13 +184,13 @@ library(unbalanced)
 instanciasSmote <- unbalanced::ubSMOTE(trainSMOTE[,-75], factor(as.integer(I(train[,75]==0))), perc.over = 200)
 # Se unen todas las variables con la clase
 instanciasSmote <-cbind(instanciasSmote[[1]], instanciasSmote[[2]])
-# Me quedo con las instancias sintéticas para la clase minoritaria 0 que está marcadas como 1
+# Me quedo con las instancias sintÃ©ticas para la clase minoritaria 0 que estÃ¡ marcadas como 1
 instanciasSmote <- instanciasSmote[which(instanciasSmote[,75]==1),]
 # Las convierto a 0
 instanciasSmote[,75] <- 0
 # Cambio el nombre de la clase a y
 names(instanciasSmote)[75] <- "y"
-# Añado los SMOTE a train
+# AÃ±ado los SMOTE a train
 trainSMOTE <- rbind(trainSMOTE, instanciasSmote)
 
 crossvalidation5(trainSMOTE[,-var[1:25]]) # 0,8503597
@@ -213,13 +214,13 @@ trainIPF_SMOTE <- trainIPF_SMOTE$cleanData
 instanciasSmote <- unbalanced::ubSMOTE(trainIPF_SMOTE[,-75], factor(as.integer(I(trainIPF_SMOTE[,75]==0))), perc.over = 200)
 # Se unen todas las variables con la clase
 instanciasSmote <-cbind(instanciasSmote[[1]], instanciasSmote[[2]])
-# Me quedo con las instancias sintéticas para la clase minoritaria 0 que está marcadas como 1
+# Me quedo con las instancias sintÃ©ticas para la clase minoritaria 0 que estÃ¡ marcadas como 1
 instanciasSmote <- instanciasSmote[which(instanciasSmote[,75]==1),]
 # Las convierto a 0
 instanciasSmote[,75] <- 0
 # Cambio el nombre de la clase a y
 names(instanciasSmote)[75] <- "y"
-# Añado los SMOTE a train
+# AÃ±ado los SMOTE a train
 trainIPF_SMOTE <- rbind(trainIPF_SMOTE, instanciasSmote)
 
 crossvalidation5(trainIPF_SMOTE[,-var[1:25]]) # 0.8624823
@@ -235,13 +236,13 @@ trainSMOTE_IPF <- train
 instanciasSmote <- unbalanced::ubSMOTE(trainSMOTE_IPF[,-75], factor(as.integer(I(trainSMOTE_IPF[,75]==0))), perc.over = 200)
 # Se unen todas las variables con la clase
 instanciasSmote <-cbind(instanciasSmote[[1]], instanciasSmote[[2]])
-# Me quedo con las instancias sintéticas para la clase minoritaria 0 que está marcadas como 1
+# Me quedo con las instancias sintÃ©ticas para la clase minoritaria 0 que estÃ¡ marcadas como 1
 instanciasSmote <- instanciasSmote[which(instanciasSmote[,75]==1),]
 # Las convierto a 0
 instanciasSmote[,75] <- 0
 # Cambio el nombre de la clase a y
 names(instanciasSmote)[75] <- "y"
-# Añado los SMOTE a train
+# AÃ±ado los SMOTE a train
 trainSMOTE_IPF <- rbind(trainSMOTE_IPF, instanciasSmote)
 
 # Factorizo la clase para aplicarle IPF
@@ -285,13 +286,13 @@ trainTL_SMOTE <- trainTL_SMOTE[-instanciasTL$id.rm,]
 instanciasSmote <- unbalanced::ubSMOTE(trainTL_SMOTE[,-75], factor(as.integer(I(trainTL_SMOTE[,75]==0))), perc.over = 200)
 # Se unen todas las variables con la clase
 instanciasSmote <-cbind(instanciasSmote[[1]], instanciasSmote[[2]])
-# Me quedo con las instancias sintéticas para la clase minoritaria 0 que está marcadas como 1
+# Me quedo con las instancias sintÃ©ticas para la clase minoritaria 0 que estÃ¡ marcadas como 1
 instanciasSmote <- instanciasSmote[which(instanciasSmote[,75]==1),]
 # Las convierto a 0
 instanciasSmote[,75] <- 0
 # Cambio el nombre de la clase a y
 names(instanciasSmote)[75] <- "y"
-# Añado los SMOTE a train
+# AÃ±ado los SMOTE a train
 trainTL_SMOTE <- rbind(trainTL_SMOTE, instanciasSmote)
 
 crossvalidation5(trainTL_SMOTE[,-var[1:25]]) # 0.8481349
@@ -308,13 +309,13 @@ trainSMOTE_TL <- train
 instanciasSmote <- unbalanced::ubSMOTE(trainSMOTE_TL[,-75], factor(as.integer(I(trainSMOTE_TL[,75]==0))), perc.over = 200)
 # Se unen todas las variables con la clase
 instanciasSmote <-cbind(instanciasSmote[[1]], instanciasSmote[[2]])
-# Me quedo con las instancias sintéticas para la clase minoritaria 0 que está marcadas como 1
+# Me quedo con las instancias sintÃ©ticas para la clase minoritaria 0 que estÃ¡ marcadas como 1
 instanciasSmote <- instanciasSmote[which(instanciasSmote[,75]==1),]
 # Las convierto a 0
 instanciasSmote[,75] <- 0
 # Cambio el nombre de la clase a y
 names(instanciasSmote)[75] <- "y"
-# Añado los SMOTE a train
+# AÃ±ado los SMOTE a train
 trainSMOTE_TL <- rbind(trainSMOTE_TL, instanciasSmote)
 
 # Busco las instancias Tomek Links
@@ -338,7 +339,7 @@ trainROS[,75] <- factor(trainROS[,75])
 # Modifico los levels de la clase para aplicar ROS
 levels(trainROS[,75]) <- c(0,1,1,1)
 instanciasROS <- ROSE::ovun.sample(y ~., trainROS, method = "over")
-# Añado a train las instancias ROS de la clase 0
+# AÃ±ado a train las instancias ROS de la clase 0
 trainROS <- rbind(train, instanciasROS$data[which(instanciasROS$data[,75]==0),])
 
 crossvalidation5(trainROS[,-var[1:25]]) # 0.9134734
@@ -357,7 +358,7 @@ trainROS_IPF[,75] <- factor(trainROS_IPF[,75])
 # Modifico los levels de la clase para aplicar ROS
 levels(trainROS_IPF[,75]) <- c(0,1,1,1)
 instanciasROS <- ROSE::ovun.sample(y ~., trainROS_IPF, method = "over")
-# Añado a train las instancias ROS de la clase 0
+# AÃ±ado a train las instancias ROS de la clase 0
 trainROS_IPF <- rbind(train, instanciasROS$data[which(instanciasROS$data[,75]==0),])
 
 # Factorizo la clase para aplicarle IPF
@@ -379,7 +380,7 @@ prediccionTest(trainROS_IPF[,-var[1:25]], test)
 train_ROS2 <- train
 
 # Hago ROS de la clase 0 con cada una del resto de manera individual y prestando
-# más atención a la clase 1
+# mÃ¡s atenciÃ³n a la clase 1
 train_ROS2_1 <- train[which(train_ROS2[,75]==0|train_ROS2[,75]==1),]
 train_ROS2_1 <- ROSE::ovun.sample(y ~., train_ROS2_1, method = "over", p=0.5)
 train_ROS2_1 <- train_ROS2_1$data
@@ -408,7 +409,7 @@ prediccionTest(train_ROS2[,-var[1:25]], test)
 train_ROS2_IPF <- train
 
 # Hago ROS de la clase 0 con cada una del resto de manera individual y prestando
-# más atención a la clase 1
+# mÃ¡s atenciÃ³n a la clase 1
 train_ROS2_1 <- train[which(train_ROS2_IPF[,75]==0|train_ROS2_IPF[,75]==1),]
 train_ROS2_1 <- ROSE::ovun.sample(y ~., train_ROS2_1, method = "over", p=0.5)
 train_ROS2_1 <- train_ROS2_1$data
