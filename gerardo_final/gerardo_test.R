@@ -11,7 +11,7 @@ test_base <- read.csv2("data/Numericos_SinCorr-TEST.csv")
 ##############
 # CV 5-Folds #
 ##############
-source("funciones_de_clasificacion.R")
+source("./funciones_de_clasificacion.R")
 
 
 

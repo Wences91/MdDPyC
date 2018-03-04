@@ -46,7 +46,7 @@ ejecutarRipper <- function(train, test, excludeAttr=c()){
 #' para ver como se comporta
 #' @param train conjunto de entrenamiento
 #' @param folds número de conjuntos que se van a conformar
-crossvalidation5 <- function(train, folds=5){
+crossvalidation5 <- function(train, folds_cut=5){
   # Cross-Validation
   # Se le pasa el train que se va a usar para construir el modelo y automaticamente
   # hace todo
@@ -57,10 +57,10 @@ crossvalidation5 <- function(train, folds=5){
   datos<-train[sample(nrow(train)),]
   
   # Creo 5 folds
-  folds <- cut(seq(1,nrow(train)),breaks=folds,labels=FALSE)
+  folds <- cut(seq(1,nrow(train)),breaks=folds_cut,labels=FALSE)
   
   # A través de un sapply hago la CV para cada fold
-  precision <- mean(sapply(1:folds, function(x){
+  precision <- mean(sapply(1:folds_cut, function(x){
     
     indices <- which(folds==x,arr.ind=TRUE)
     test <- datos[indices, ]
@@ -87,7 +87,7 @@ crossvalidation5 <- function(train, folds=5){
 #' @param test conjunto de test para kaggel
 #' @param nombre que va a tener el fichero
 
-prediccionTest <- function(train, test, nombre="sample.csv"){
+prediccionTest <- function(train, test, nombre="sample.csv", folder="./"){
   # Se le pasa un train y test, entrena con el primero y 
   #predice sobre el segundo
   
@@ -106,7 +106,7 @@ prediccionTest <- function(train, test, nombre="sample.csv"){
   colnames(predicciones) <- c("Id","Prediction")
   
   # Guardo
-  write.table(predicciones, paste("predicciones_gerardo/",nombre), col.names = TRUE, row.names = FALSE,
+  write.table(predicciones, paste(folder,nombre), col.names = TRUE, row.names = FALSE,
               quote=FALSE, sep = ",")
   
   return(resultado$prediccion)
