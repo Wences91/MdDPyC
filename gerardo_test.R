@@ -1,7 +1,3 @@
-# Wences
-
-# setwd("/Users/wences/Desktop/Máster/Minería de datos Preprocesamiento y clasificación/Final/MdDPyC/glm")
-
 # Carga de datos
 Train <- read.table("data/my_dataset_train.csv", header=TRUE, sep=",", dec=".", stringsAsFactors = FALSE)
 Test <- read.table("data/my_dataset_test.csv", header=TRUE, sep=",", dec=".", stringsAsFactors = FALSE)
@@ -331,7 +327,11 @@ crossvalidation5 <- function(train){
     resultado <- ejecutarRipper(train, test)
     print (paste("resultado parcial", sum(resultado$prediccion==test[,dim(test)[2]])))
     
-    return(mean(resultado$prediccion==test[,dim(test)[2]]))
+    return(
+      mean(
+        as.numeric(as.character(resultado$prediccion))==test[,dim(test)[2]]
+      )
+    )
     
   }))
   
@@ -352,14 +352,16 @@ prediccionTest <- function(train, test, nombre="sample.csv"){
   
   
   # Guardo aparte las predicciones para devolverlas al final
-  predicciones <- resultado$prediccion
-  
+  predicciones <- as.numeric(as.character(resultado$prediccion))
+
   # Creo un tabla de predicciones para subirlo a Kaggle
-  predicciones <- matrix(c(1:length(predicciones),predicciones), length(predicciones), 2,byrow = FALSE)
+  predicciones <- matrix(
+    c(1:length(predicciones),predicciones), 
+    length(predicciones), 2,byrow = FALSE)
   colnames(predicciones) <- c("Id","Prediction")
-  
+
   # Guardo
-  write.table(predicciones, nombre, col.names = TRUE, row.names = FALSE,
+  write.table(predicciones, paste("predicciones_gerardo/",nombre), col.names = TRUE, row.names = FALSE,
               quote=FALSE, sep = ",")
   
   return(resultado$prediccion)
@@ -409,7 +411,7 @@ train_media <- read.csv2("data/Numericos_SinCorr_Media-TRAIN.csv");
 test_media <- read.csv2("data/Numericos_SinCorr_Media-TEST.csv");
 
 crossvalidation5(train_media) # 0.5359196
-prediccionTest(train_media, test_media,"sample_imputacion_media.csv")
+prediccionTest(train_media, test_media,"01.sample_imputacion_media.csv")
 
 ###########
 # 1. Base (imputación RF) #
@@ -428,7 +430,7 @@ prediccionTest(train_media, test_media,"sample_imputacion_media.csv")
 train_ra <- read.csv2("data/Numericos_ImpRA_SinCorr-TRAIN.csv");
 test_ra <- read.csv2("data/Numericos_ImpRA_SinCorr-TEST.csv");
 crossvalidation5(train_ra) #0.546549
-prediccionTest(train_ra, test,"sample_imputacion_ra.csv")
+prediccionTest(train_ra, test,"02.sample_imputacion_ra.csv")
 
 
 ###########
@@ -437,7 +439,7 @@ prediccionTest(train_ra, test,"sample_imputacion_ra.csv")
 train_knn <- train
 test_knn <- test
 crossvalidation5(train) # 0.6400181
-prediccionTest(train, test,"sample_base_imputacion_knn.csv")
+prediccionTest(train, test,"03.sample_base_imputacion_knn.csv")
 
 # Gráfico para ver el acierto sobre train
 prediccionesBase <- prediccionTest(train, train)
@@ -460,7 +462,7 @@ importance <- caret::varImp(rm, scale=FALSE)
 var <- order(importance[[1]])
 
 crossvalidation5(train[,-var[1:25]]) # 0.5403119
-prediccionTest(train[,-var[1:25]], test,"sample_base_sv.csv")
+prediccionTest(train[,-var[1:25]], test,"04.sample_base_sv.csv")
 
 ##########
 # 3. Selección variables (Boruta) #
@@ -482,8 +484,9 @@ prediccionTest(train[,-var[1:25]], test,"sample_base_sv.csv")
 
 train_bo <- read.csv2("data/Numericos_ImpKNN_SinCorr-Boruta-TRAIN.csv");
 test_bo <- read.csv2("data/Numericos_ImpKNN_SinCorr-Boruta-TEST.csv");
+
 crossvalidation5(train_bo) # 0.5538811
-prediccionTest(test_bo, test_bo,,"sample_base_sv_boruta.csv")
+prediccionTest(train_bo, test_bo,"05.sample_base_sv_boruta.csv")
 
 
 ##########
@@ -492,9 +495,9 @@ prediccionTest(test_bo, test_bo,,"sample_base_sv_boruta.csv")
 train_bo$y <- as.factor(train_bo$y)
 train_bo_ipf <- NoiseFiltersR::IPF(train_bo, s=3)
 train_bo_ipf <- train_bo_ipf$cleanData
-
+test_bo_ipf <- test_bo
 crossvalidation5(train_bo_ipf) # 0.7717314
-prediccionTest(test_bo, test_bo,,"sample_base_sv_boruta_ipf.csv")
+prediccionTest(train_bo_ipf, test_bo_ipf,"06.sample_base_sv_boruta_ipf.csv")
 
 
 
@@ -514,7 +517,7 @@ trainIPF <- IPF(y ~., trainIPF, consensus = TRUE, s=2)
 trainIPF <- trainIPF$cleanData
 
 crossvalidation5(trainIPF[,-var[1:25]]) #0.5992802 
-prediccionTest(trainIPF[,-var[1:25]], test,"sample_base_sv_ipf.csv")
+prediccionTest(trainIPF[,-var[1:25]], test,"07.sample_base_sv_ipf.csv")
 
 ############
 # 4. SMOTE #
@@ -537,7 +540,7 @@ names(instanciasSmote)[75] <- "y"
 trainSMOTE <- rbind(trainSMOTE, instanciasSmote)
 
 crossvalidation5(trainSMOTE[,-var[1:25]]) # 
-prediccionTest(trainSMOTE[,-var[1:25]], test,"sample_base_sv_smoote.csv")
+prediccionTest(trainSMOTE[,-var[1:25]], test,"08.sample_base_sv_smoote.csv")
 
 ##################
 # 5. IPF + SMOTE #
@@ -567,7 +570,7 @@ names(instanciasSmote)[75] <- "y"
 trainIPF_SMOTE <- rbind(trainIPF_SMOTE, instanciasSmote)
 
 crossvalidation5(trainIPF_SMOTE[,-var[1:25]]) # 0.6094697
-prediccionTest(trainIPF_SMOTE[,-var[1:25]], test,"sample_base_sv_ipf_smoote.csv")
+prediccionTest(trainIPF_SMOTE[,-var[1:25]], test,"09.sample_base_sv_ipf_smoote.csv")
 
 ##################
 # 6. SMOTE + IPF #
@@ -597,7 +600,7 @@ trainSMOTE_IPF <- IPF(y ~., trainSMOTE_IPF, consensus = TRUE, s=2)
 trainSMOTE_IPF <- trainSMOTE_IPF$cleanData
 
 crossvalidation5(trainSMOTE_IPF[,-var[1:25]]) #0.6008772
-prediccionTest(trainSMOTE_IPF[,-var[1:25]], test,"sample_base_sv_smote_ipv.csv")
+prediccionTest(trainSMOTE_IPF[,-var[1:25]], test,"10.sample_base_sv_smote_ipv.csv")
 
 ##################
 # 7. Tomek Links #
@@ -611,7 +614,7 @@ instanciasTL<- unbalanced::ubTomek(trainTL[,-75], (trainTL[,75]==0))
 trainTL <- trainTL[-instanciasTL$id.rm,]
 
 crossvalidation5(trainTL[,-var[1:25]]) # 0.5485493
-prediccionTest(trainTL[,-var[1:25]], test,"sample_base_sv_tomelinks.csv")
+prediccionTest(trainTL[,-var[1:25]], test,"11.sample_base_sv_tomelinks.csv")
 
 ##########################
 # 8. Tomek Links + SMOTE #
@@ -638,7 +641,7 @@ names(instanciasSmote)[75] <- "y"
 trainTL_SMOTE <- rbind(trainTL_SMOTE, instanciasSmote)
 
 crossvalidation5(trainTL_SMOTE[,-var[1:25]]) # 0.6095479
-prediccionTest(trainTL_SMOTE[,-var[1:25]], test,"sample_base_sv_tomelinks_smote.csv")
+prediccionTest(trainTL_SMOTE[,-var[1:25]], test,"12.sample_base_sv_tomelinks_smote.csv")
 
 ##########################
 # 9. SMOTE + Tomek Links #
@@ -665,7 +668,7 @@ instanciasTL<- unbalanced::ubTomek(trainSMOTE_TL[,-75], (trainSMOTE_TL[,75]==0))
 trainSMOTE_TL <- trainSMOTE_TL[-instanciasTL$id.rm,]
 
 crossvalidation5(trainSMOTE_TL[,-var[1:25]]) # 0.5938863
-prediccionTest(trainSMOTE_TL[,-var[1:25]], test,"sample_base_sv_smote_tomelinks.csv")
+prediccionTest(trainSMOTE_TL[,-var[1:25]], test,"13.sample_base_sv_smote_tomelinks.csv")
 
 ###########
 # 10. ROS #
@@ -683,7 +686,7 @@ instanciasROS <- ROSE::ovun.sample(y ~., trainROS, method = "over")
 trainROS <- rbind(train, instanciasROS$data[which(instanciasROS$data[,75]==0),])
 
 crossvalidation5(trainROS[,-var[1:25]]) # 0.7704359
-prediccionTest(trainROS[,-var[1:25]], test,"sample_base_sv_ROS.csv")
+prediccionTest(trainROS[,-var[1:25]], test,"14.sample_base_sv_ROS.csv")
 
 
 #################
@@ -709,7 +712,7 @@ trainROS_IPF <- IPF(y ~., trainROS_IPF, consensus = TRUE, s=2)
 trainROS_IPF <- trainROS_IPF$cleanData
 
 crossvalidation5(trainROS_IPF[,-var[1:25]]) # 0.7798058
-prediccionTest(trainROS_IPF[,-var[1:25]], test,"sample_base_sv_ROS_IPF.csv")
+prediccionTest(trainROS_IPF[,-var[1:25]], test,"15.sample_base_sv_ROS_IPF.csv")
 
 #############
 # 12. ROS 2 #
@@ -737,7 +740,7 @@ levels(train_ROS2_3) <- c(0,3)
 train_ROS2 <- rbind(train, train_ROS2_1, train_ROS2_2, train_ROS2_3)
 
 crossvalidation5(train_ROS2[,-var[1:25]]) # 0.8389088
-prediccionTest(train_ROS2[,-var[1:25]], test,"sample_base_sv_ROS-OVA.csv")
+prediccionTest(train_ROS2[,-var[1:25]], test,"16.sample_base_sv_ROS-OVA.csv")
 
 ###################
 # 13. ROS 2 + IPF #
@@ -773,7 +776,7 @@ train_ROS2_IPF <- IPF(y ~., train_ROS2_IPF, consensus = TRUE, s=2)
 train_ROS2_IPF <- train_ROS2_IPF$cleanData
 
 crossvalidation5(train_ROS2_IPF[,-var[1:25]]) # 
-prediccionTest(train_ROS2_IPF[,-var[1:25]], test,"sample_base_sv_ROS-OVA_IPF.csv")
+prediccionTest(train_ROS2_IPF[,-var[1:25]], test,"17.sample_base_sv_ROS-OVA_IPF.csv")
 
 ###########
 # 14. ENN #
@@ -785,7 +788,7 @@ instanciasENN <- unbalanced::ubENN(trainENN[,-75], (trainENN[,75]==0))
 trainENN <- trainENN[-instanciasENN$id.rm,]
 
 crossvalidation5(trainENN[,-var[1:25]]) # 0.8723058
-prediccionTest(trainENN[,-var[1:25]], test,"sample_base_sv_ENN.csv")
+prediccionTest(trainENN[,-var[1:25]], test,"18.sample_base_sv_ENN.csv")
 
 ##################
 # 15. Duplicar 0 #
@@ -796,7 +799,7 @@ trainROS_Propio <- train
 trainROS_Propio <- rbind(trainROS_Propio, train[which(trainROS_Propio[,75]==0),])
 
 crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.5619751
-prediccionTest(trainROS_Propio[,-var[1:25]], test,"sample_base_sv_ROS-propio.csv")
+prediccionTest(trainROS_Propio[,-var[1:25]], test,"19.sample_base_sv_ROS-propio.csv")
 
 #############################
 # 16. Duplicar 0 + Random 1 #
@@ -808,7 +811,7 @@ trainROS_Propio <- rbind(trainROS_Propio, train[which(trainROS_Propio[,75]==0),]
 trainROS_Propio <- rbind(trainROS_Propio, train[sample(which(trainROS_Propio[,75]==1), length(which(trainROS_Propio[,75]==1))/2.5),]) 
 
 crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.5990698
-prediccionTest(trainROS_Propio[,-var[1:25]], test,"sample_base_sv_ROS-propio.csv")
+prediccionTest(trainROS_Propio[,-var[1:25]], test,"20.sample_base_sv_ROS-propio.csv")
 
 # Gráfico para ver el acierto sobre train (Mejora el acierto de la clase 0 pero se reducen en la dos)
 prediccionesFinal <- prediccionTest(trainROS_Propio[,-var[1:25]], train)
@@ -819,3 +822,29 @@ ggplot2::ggplot()+
   scale_fill_discrete("Datos") +
   labs(x = "Clase", y = "Valores")
 
+##############
+# Descartada #
+##############
+
+trainDescartada <- train
+
+trainDescartada <- rbind(trainDescartada, train[which(trainDescartada[,75]==0),])
+trainDescartada <- rbind(trainDescartada, train[sample(which(trainDescartada[,75]==1), length(which(trainDescartada[,75]==1))/2.5),]) 
+
+# Predigo sobre test y asigno las predicciones de la clase obtenidas a test
+retro <- prediccionTest(trainDescartada[,-var[1:25]], test)
+retro <- cbind(test, y=retro)
+
+# Factorizo la clase para aplicarle IPF
+retro[,75] <- factor(retro[,75])
+# Le quito las instancias con ruido
+# indico que pare a la segunda que no encuentre y que lo haga mediante consenso
+retro <- IPF(y ~., retro, s=2, nfolds=5, consensus=TRUE, p=0.01)
+# Me quedo unicamente con el data.frame limpio
+retro <- retro$cleanData
+
+# Uno train y test
+descartada <- rbind(trainDescartada, retro)
+
+crossvalidation5(descartada[,-var[1:25]]) # 0,5997358
+prediccionTest(descartada[,-var[1:25]], test, "21.descartada.csv")
