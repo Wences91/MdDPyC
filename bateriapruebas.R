@@ -32,14 +32,55 @@ write.table(predicciones, nombre, col.names = TRUE, row.names = FALSE,
 return(max(trainModelRpart$results$Accuracy))
 }
 
-##############################
-# 2. Imputación con las medias 
-##############################
+#################
+# 1.Base MEDIAS#
+#################
 
+
+trainmed <- read.csv2("data/Numericos_SinCorr_Media-TRAIN.csv", stringsAsFactors = FALSE)
+testmed <- read.csv2("data/Numericos_SinCorr_Media-TEST.csv", stringsAsFactors = FALSE)
+
+validacion(train,test,"rpart/trainmed.csv")
+
+
+#################
+# 1. Base AR    #
+#################
+
+trainar <- read.csv2("data/Numericos_ImpRA_SinCorr-TRAIN.csv", stringsAsFactors = FALSE)
+testar <- read.csv2("data/Numericos_ImpRA_SinCorr-TEST.csv", stringsAsFactors = FALSE)
+
+validacion(train,test,"rpart/basear.csv")
+
+
+
+###################################
+# 2. Selección variables (Boruta) #
+###################################
+
+library(Boruta)
+
+var2 <- Boruta(train[,-ncol(train)], train$y)
+train3_base <- train[,!(names(train) %in%names(var2$finalDecision)[var2$finalDecision=="Rejected"])]
+test3_base <- test[,!(names(test) %in%names(var2$finalDecision)[var2$finalDecision=="Rejected"])]
+
+validacion(train3_base,test3_base,"rpart/boruta.csv")
+
+
+#########################################
+# 2. Selección variables (Boruta) + IPF #
+#########################################
+train_bo <- train3_base
+
+train_bo$y <- as.factor(train_bo$y)
+train_bo_ipf <- NoiseFiltersR::IPF(train_bo, s=3)
+train_bo_ipf <- train_bo_ipf$cleanData
+
+validacion(train_bo_ipf,test3_base,"rpart/borutaipf.csv")
 
 
 ##########################
-# 2. Selección variables #
+# 2. Selección variables RF#
 ##########################
 # A través de Random Forest obtengo un vecto ordenado en función de la importancia
 # de las variables que intervienen en él
@@ -343,8 +384,7 @@ trainROS_Propio <- train
 
 trainROS_Propio <- rbind(trainROS_Propio, train[which(trainROS_Propio[,75]==0),])
 
-crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.643618
-prediccionTest(trainROS_Propio[,-var[1:25]], test)
+validacion(trainROS_Propio[,-var[1:25]],test,"rpart/duplicar0.csv") 
 
 #############################
 # 16. Duplicar 0 + Random 1 #
@@ -355,16 +395,45 @@ trainROS_Propio <- train
 trainROS_Propio <- rbind(trainROS_Propio, train[which(trainROS_Propio[,75]==0),])
 trainROS_Propio <- rbind(trainROS_Propio, train[sample(which(trainROS_Propio[,75]==1), length(which(trainROS_Propio[,75]==1))/2.5),]) 
 
-crossvalidation5(trainROS_Propio[,-var[1:25]]) # 0.6458915
-prediccionTest(trainROS_Propio[,-var[1:25]], test)
+validacion(trainROS_Propio[,-var[1:25]],test,"rpart/duplicar0random1.csv") 
 
-# Gráfico para ver el acierto sobre train (Mejora el acierto de la clase 0 pero se reducen en la dos)
-prediccionesFinal <- prediccionTest(trainROS_Propio[,-var[1:25]], train)
+#*******************************
+#PROPUESTA DESCARTADA
+#*******************************
+trainDescartada <- train
 
-ggplot2::ggplot()+
-  geom_col(aes(x=0:3, y=as.data.frame(table(train[,75]))[,2], fill="Original"), alpha=.8) + 
-  geom_col(aes(x=0:3, y=as.data.frame(diag(table(train[,75], prediccionesFinal)))[,1], fill="Predicciones"), alpha=.8) +
-  scale_fill_discrete("Datos") +
-  labs(x = "Clase", y = "Valores")
+trainDescartada <- rbind(trainDescartada, train[which(trainDescartada[,75]==0),])
+trainDescartada <- rbind(trainDescartada, train[sample(which(trainDescartada[,75]==1), length(which(trainDescartada[,75]==1))/2.5),]) 
+
+trainDescartada<-trainDescartada[,-var[1:25]]
+
+# Predigo sobre test y asigno las predicciones de la clase obtenidas a test
+control <- trainControl(method = "cv", number = 5, returnResamp = "all", search = "random")
+
+trainModelRpart <- caret::train(y ~.,  data = trainDescartada, 
+                                method = "rpart", 
+                                trControl = control,
+                                preProc = c("center", "scale"))
+
+modelo.predict0 <- caret::predict.train(trainModelRpart, test, type="raw")
+predicciones <- as.integer(as.character(modelo.predict0))
+
+
+retro <- cbind(test, y=predicciones)
+
+# Factorizo la clase para aplicarle IPF
+retro[,75] <- factor(retro[,75])
+# Le quito las instancias con ruido
+# indico que pare a la segunda que no encuentre y que lo haga mediante consenso
+retro <- IPF(y ~., retro, s=2, nfolds=5, consensus=TRUE, p=0.01)
+# Me quedo unicamente con el data.frame limpio
+retro <- retro$cleanData
+
+# Uno train y test
+descartada <- rbind(trainDescartada, retro)
+
+trainDescartada$y<-as.factor(trainDescartada$y)
+
+validacion(trainDescartada,test,"rpart/novalida.csv") 
 
 
